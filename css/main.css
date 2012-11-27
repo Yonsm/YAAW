@@ -21,12 +21,24 @@
 .select-box {
     cursor: pointer;
 }
+.btn-inline {
+    /* fix for MAC/chrome */
+    display: inline !important;
+}
+.btn-inline:before, .btn-inline:after {
+    /* fix for IE8 */
+    content: none !important;
+    display: none !important;
+}
 
 /* header */
 .main-head {
     position: relative;
     padding-bottom: 3px;
     border-bottom: 1px solid #C6C6C6;
+}
+.main-head h1 {
+    display: inline-block;
 }
 
 #main-alert {
@@ -71,7 +83,9 @@
 }
 
 #do-all-btn {
-    margin-left: 10px;
+    /* fix for MAC/chrome firefox */
+    position: relative;
+    left: 10px;
 }
 
 #info-btn {
@@ -246,11 +260,13 @@
     height: 300px;
 }
 #ib-status,
-#ib-files {
+#ib-files,
+#ib-options {
     position: relative;
     margin: 18px 0;
 }
-#ib-files ul {
+#ib-files ul,
+#ib-options ul {
     margin: 0;
 }
 #ib-files li {
@@ -264,7 +280,8 @@
 #ib-files .ib-file-title:hover {
     border-bottom: 1px solid #666;
 }
-#ib-file-btn {
+#ib-file-btn,
+#ib-options-btn {
     position: absolute;
     top: 0;
     right: 18px;
@@ -274,6 +291,22 @@
 }
 .ib-file-size {
     margin-left: 20px;
+}
+#ib-options li {
+    display: block;
+    float: left;
+    padding-bottom: 6px;
+    margin-right: 100px;
+}
+#ib-options li span {
+    display: block;
+    text-align: right;
+    padding-right: 1em;
+    width: 140px;
+    line-height: 24px;
+}
+#ib-options li > * {
+    float: left;
 }
 
 /* task-contextmenu */
@@ -293,11 +326,33 @@
 }
 
 #add-task-uri {
+    text-align: center;
+    white-space: nowrap;
     padding: 10px 19px;
-    margin: 0 0 10px;
+    margin: 0;
+    overflow: hidden;
 }
 #uri-input {
     width: 370px; 
+}
+#uri-textarea {
+    width: 465px;
+    margin: 0;
+}
+
+#uri-more {
+    font-size: 7px;
+    text-align: center;
+    height: 10px;
+    margin: 0 20px 20px;
+    line-height: 10px;
+    color: #DDD;
+    background-color: whiteSmoke;
+    cursor: pointer;
+}
+#uri-more:hover {
+    background-color: #DDD;
+    color: #999;
 }
 
 #torrent-up-input {
@@ -326,14 +381,14 @@
 }
 #add-task-option .half {
     float: left;
-    width: 240px;
+    width: 230px;
     margin-left: 10px;
 }
 #add-task-option .control-label {
     width: 70px;
 }
 #add-task-option .controls {
-    margin-left: 90px;
+    margin-left: 85px;
 }
 
 /* aria2 global setting */

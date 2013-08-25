@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * Copyright (C) 2012 Binux <17175297.hk@gmail.com>
  *
  * This file is part of YAAW (https://github.com/binux/yaaw).
@@ -24,6 +24,8 @@ var YAAW = (function() {
   var torrent_file = null, file_type = null;
   return {
     init: function() {
+      $('#main-control').show();
+
       this.tpl.init();
       this.setting.init();
       this.contextmenu.init();
@@ -161,7 +163,7 @@ var YAAW = (function() {
         }
       } else {
         $("#torrent-up-input").remove();
-        $("#torrent-up-btn").addClass("disabled");
+        $("#torrent-up-btn").addClass("disabled").tooltip({title: "文件 API 不支持。"});
       }
 
       if (window.applicationCache) {
@@ -553,9 +555,11 @@ var YAAW = (function() {
           }
           return false;
         }).live("mouseout", function(ev) {
-          if ($.contains(this, ev.toElement) ||
-            $("#task-contextmenu").get(0) == ev.toElement ||
-            $.contains($("#task-contextmenu").get(0), ev.toElement)) {
+          // toElement is not available in Firefox, use relatedTarget instead.
+          var enteredElement = ev.toElement || ev.relatedTarget;
+          if ($.contains(this, enteredElement) ||
+            $("#task-contextmenu").get(0) == enteredElement ||
+            $.contains($("#task-contextmenu").get(0), enteredElement)) {
             return;
           }
           on_gid = null;
@@ -627,6 +631,17 @@ var YAAW = (function() {
         this.jsonrpc_history = JSON.parse($.Storage.get("jsonrpc_history") || "[]");
         if (this.add_task_option) {
           this.add_task_option = JSON.parse(this.add_task_option);
+        }
+        // overwrite settings with hash
+        if (location.hash && location.hash.length) {
+          var args = location.hash.substring(1).split('&'), kwargs = {};
+          $.each(args, function(i, n) {
+            n = n.split('=', 2);
+            kwargs[n[0]] = n[1];
+          });
+
+          if (kwargs['path']) this.jsonrpc_path = kwargs['path'];
+          this.kwargs = kwargs;
         }
 
         var _this = this;

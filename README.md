@@ -1,6 +1,8 @@
 YAAW
 ====
 
+汉化修改版的 YAAW，添加转到离线下载网站的链接。
+
 Yet Another Aria2 Web Frontend in pure HTML/CSS/Javascirpt.
 
 No HTTP server, backend or server-side program. All you need is just a browser.

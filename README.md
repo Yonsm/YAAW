@@ -49,7 +49,7 @@ http://hdweb.googlecode.com/svn/MBL/opt/share/yaaw/index.html?http://192.168.1.1
 Tips
 ----
 * All your settings on web is temporary. **Settings will be lost after aria2 restarted.**
-* Tasks(including which is not finished) will be lost after aria2 restarted. Using `--save-session=SOME/WHERE` and reload with `--continue=ture --input-file=SOME/WHERE` to continue.
+* Tasks(including which is not finished) will be lost after aria2 restarted. Using `--save-session=SOME/WHERE` and reload with `--continue=true --input-file=SOME/WHERE` to continue.
 * Using `$HOME/.aria2/aria2.conf` to save your options.
 * For more infomations about aria2, visit [Aria2 Manual](http://aria2.sourceforge.net/manual/en/html/)
 
@@ -65,3 +65,5 @@ License
 -------
 yaaw is licensed under GNU Lesser General Public License.
 You may get a copy of the GNU Lesser General Public License from http://www.gnu.org/licenses/lgpl.txt
+
+favicon.ico by [fangke](http://fangke.im/)

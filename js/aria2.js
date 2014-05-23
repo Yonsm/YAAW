@@ -19,7 +19,7 @@
  */
 
 if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
-  var jsonrpc_interface, jsonrpc_protocol, jsonrpc_ws, interval_id,
+  var jsonrpc_interface, jsonrpc_protocol, jsonrpc_ws, interval_id, rpc_secret = null,
       unique_id = 0, ws_callback = {};
   var active_tasks_snapshot="", tasks_cnt_snapshot="", select_lock=false, need_refresh=false;
   var auto_refresh=false;
@@ -89,6 +89,13 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
     return title;
   }
 
+  function request_auth(url) {
+    return url.match(/^(?:(?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(?:\/\/)?(?:([^:@]*(?::[^:@]*)?)?@)?/)[1];
+  }
+  function remove_auth(url) {
+    return url.replace(/^((?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(\/\/)?(?:(?:[^:@]*(?::[^:@]*)?)?@)?(.*)/, '$1$2$3');
+  }
+
   return {
     init: function(path, onready) {
       var connect_msg_id = main_alert("alert-info", "connecting...");
@@ -108,6 +115,12 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
       {
         jsonrpc_interface = path || "http://"+(location.host.split(":")[0]||"localhost")+":6800"+"/jsonrpc";
       }
+      var auth_str = request_auth(jsonrpc_interface);
+      if (auth_str && auth_str.indexOf('token:') == 0) {
+        rpc_secret = auth_str;
+        jsonrpc_interface = remove_auth(jsonrpc_interface);
+      }
+
       if (jsonrpc_interface.indexOf("http") == 0) {
         jsonrpc_protocol = "http";
         $.jsonRPC.setup({endPoint: jsonrpc_interface, namespace: 'aria2'});
@@ -163,6 +176,11 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
     request_http: function(method, params, success, error) {
       if (error == undefined)
         error = default_error;
+      if (rpc_secret) {
+        params = params || [];
+        if (!$.isArray(params)) params = [params];
+        params.unshift(rpc_secret);
+      }
       $.jsonRPC.request(method, {params:params, success:success, error:error});
     },
 
@@ -171,7 +189,11 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
         error = default_error;
       var commands = new Array();
       $.each(params, function(i, n) {
+        n = n || [];
         if (!$.isArray(n)) n = [n];
+        if (rpc_secret) {
+          n.unshift(rpc_secret);
+        }
         commands.push({method: method, params: n});
       });
       $.jsonRPC.batchRequest(commands, {success:success, error:error});
@@ -200,6 +222,11 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
         'success': success || function(){},
         'error': error || default_error,
       };
+      if (rpc_secret) {
+        params = params || [];
+        if (!$.isArray(params)) params = [params];
+        params.unshift(rpc_secret);
+      }
       jsonrpc_ws.send(JSON.stringify(ARIA2._request_data(method, params, id)));
     },
 
@@ -212,7 +239,11 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
       };
       for (var i=0,l=params.length; i<l; i++) {
         var n = params[i];
+        n = n || [];
         if (!$.isArray(n)) n = [n];
+        if (rpc_secret) {
+          n.unshift(rpc_secret);
+        }
         data.push(ARIA2._request_data(method, n, id))
       };
       jsonrpc_ws.send(JSON.stringify(data));
@@ -569,7 +600,7 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
     get_options: function(gid) {
       ARIA2.request("getOption", [gid],
         function(result) {
-          console.debug(result);
+          //console.debug(result);
 
           $("#ib-options").empty().append(YAAW.tpl.ib_options(result.result));
           if ($("#task-gid-"+gid).attr("data-status") == "active")
@@ -584,6 +615,16 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
           //console.debug(result);
 
           main_alert("alert-info", "option updated", 1000);
+        }
+      );
+    },
+
+    get_peers: function(gid) {
+      ARIA2.request("getPeers", [gid],
+        function(result) {
+          console.debug(result);
+
+          $("#ib-peers").empty().append(YAAW.tpl.ib_peers(result.result));
         }
       );
     },
@@ -711,6 +752,9 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
           };
           $("#ib-status").empty().append(YAAW.tpl.ib_status(result));
           $("#ib-files").empty().append(YAAW.tpl.ib_files(result));
+          if (result.bittorrent) {
+            $("#ib-peers-a").show();
+          }
         }
       );
     },

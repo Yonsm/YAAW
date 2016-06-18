@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2012 Binux <17175297.hk@gmail.com>
+ * Copyright (C) 2015 Binux <roy@binux.me>
  *
  * This file is part of YAAW (https://github.com/binux/yaaw).
  *
@@ -115,7 +115,7 @@
 #waiting-tasks-table {
     margin-bottom: 0;
 }
-#stoped-tasks-table {
+#stopped-tasks-table {
     border-top: 0;
     margin-top: 0;
 }
@@ -161,6 +161,7 @@
     white-space: nowrap;
 }
 .task .task-name span {
+    word-break: break-all;
     margin-left: 3px;
     font-size: 18px;
     font-weight: bold;
@@ -204,7 +205,7 @@
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 550px) {
     .modal.fade.in {
         top: 60px;
     }
@@ -252,6 +253,9 @@
         width: auto;
     }
 
+    #other-tasks .left-area {
+        margin-right: 0;
+    }
     #other-tasks .right-area {
         position: relative;
         padding-top: 0;
@@ -268,7 +272,7 @@
         margin-left: 110px;
     }
 }
-@media (min-width: 480px) and (max-width: 980px) {
+@media (min-width: 551px) and (max-width: 980px) {
     #active-tasks .left-area {
         margin-right: 186px;
     }
@@ -327,15 +331,17 @@
     height: 300px;
 }
 #ib-status,
-#ib-files,
 #ib-options,
 #ib-peers {
     position: relative;
     margin: 18px 0;
 }
+#ib-files .file-list {
+    margin-left: -25px;
+}
 #ib-files ul,
 #ib-options ul {
-    margin: 0;
+    margin-top: 5px;
 }
 #ib-files li {
     display: block;

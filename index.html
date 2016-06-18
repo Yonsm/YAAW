@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  Copyright (C) 2012 Binux <17175297.hk@gmail.com>
+  Copyright (C) 2015 Binux <roy@binux.me>
 
   This file is part of YAAW (https://github.com/binux/yaaw).
 
@@ -35,7 +35,7 @@
   <body>
     <div class="container">
       <header class="main-head page-header">
-        <font size="6">ARIA2 下载控制台</font> <font size="4"><a href="http://pan.baidu.com" target="_blank">百度云盘</a> <a href="http://lixian.xunlei.com" target="_blank">迅雷离线</a> <a href="https://chrome.google.com/webstore/detail/iamaphkapjbdhhpdapkalhanifedeged" target="_blank">助手</a></font>
+        <h1>ARIA2 下载控制台</h1>
         <span id="offline-cached"></span>
         <div id="global-info" class="pull-right">
           <div id="global-version"></div>
@@ -46,7 +46,7 @@
       <div class="clearfix hide" id="main-control">
         <div id="main-alert" class="hide">
           <div id="main-alert-inline" class="alert">
-            <a href="###" onclick="$('#main-alert').hide();" class="close">×</a>
+            <a href="#" id="btnClearAlert"  class="close">×</a>
             <span class="alert-msg">装载中</span>
           </div>
         </div>
@@ -60,10 +60,10 @@
               <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
-            <li><a href="###" onclick="YAAW.tasks.selectActive();">选择活动</a></li>
-            <li><a href="###" onclick="YAAW.tasks.selectWaiting();">选择等待</a></li>
-            <li><a href="###" onclick="YAAW.tasks.selectPaused();">选择暂停</a></li>
-            <li><a href="###" onclick="YAAW.tasks.selectStoped();">选择停止</a></li>
+              <li><a href="#" id="btnSelectActive" >选择活动</a></li>
+              <li><a href="#" id="btnSelectWaiting">选择等待</a></li>
+              <li><a href="#" id="btnSelectPaused" >选择暂停</a></li>
+              <li><a href="#" id="btnSelectStopped" >选择停止</a></li>
             </ul>
           </div>
         </div>
@@ -75,13 +75,13 @@
             </a>
           </div>
           <div class="pull-left btn-group" id="do-all-btn">
-            <a href="###" onclick="ARIA2.unpause_all();" class="btn" id="unpause-all" rel="tooltip" title="开始所有">
+            <a href="#" id="btnStartAll" class="btn" id="unpause-all" rel="tooltip" title="开始所有">
               <i class="icon-forward"></i>
             </a>
-            <a href="###" onclick="ARIA2.pause_all();" class="btn" id="pause-all" rel="tooltip" title="暂停所有">
+            <a href="#" id="btnPauseAll" class="btn" id="pause-all" rel="tooltip" title="暂停所有">
               <i class="icon-stop"></i>
             </a>
-            <a href="###" onclick="ARIA2.purge_download_result();" class="btn" id="pure-all" rel="tooltip" title="移除完成的任务">
+            <a href="#" id="btnRemoveFinished" class="btn" id="pure-all" rel="tooltip" title="移除完成的任务">
               <i class="icon-trash"></i>
             </a>
           </div>
@@ -89,13 +89,13 @@
 
         <div class="pull-left hide" id="selected-grp">
           <div class="btn-group">
-            <a href="###" onclick="YAAW.tasks.unpause();YAAW.tasks.unSelectAll();" class="btn" rel="tooltip" title="开始">
+            <a href="#" id="btnUnPause" class="btn" rel="tooltip" title="开始">
               <i class="icon-play"></i>
             </a>
-            <a href="###" onclick="YAAW.tasks.pause();YAAW.tasks.unSelectAll();" class="btn" rel="tooltip" title="暂停">
+            <a href="#" id="btnPause" class="btn" rel="tooltip" title="暂停">
               <i class="icon-pause"></i>
             </a>
-            <a href="###" onclick="YAAW.tasks.remove();YAAW.tasks.unSelectAll();" class="btn" rel="tooltip" title="移除">
+            <a href="#" id="btnRemove" class="btn" rel="tooltip" title="移除">
               <i class="icon-remove"></i>
             </a>
           </div>
@@ -145,15 +145,15 @@
     </div>
 
     <ul id="task-contextmenu" class="dropdown-menu">
-      <li class="task-restart"><a href="###" onclick="YAAW.contextmenu.restart();">重新开始</a></li>
-      <li class="task-start"><a href="###" onclick="YAAW.contextmenu.unpause();">开始</a></li>
-      <li><a href="###" onclick="YAAW.contextmenu.pause();">暂停</a></li>
-      <li><a href="###" onclick="YAAW.contextmenu.remove();">移除</a></li>
+      <li class="task-restart"><a href="#" id="menuRestart" >重新开始</a></li>
+      <li class="task-start"><a href="#" id="menuStart" >开始</a></li>
+      <li><a href="#" id="menuPause" >暂停</a></li>
+      <li><a href="#" id="menuRemove" >移除</a></li>
       <li class="task-move divider"></li>
-      <li class="task-move"><a href="###" onclick="YAAW.contextmenu.movetop();">置顶</a></li>
-      <li class="task-move"><a href="###" onclick="YAAW.contextmenu.moveup();">上移</a></li>
-      <li class="task-move"><a href="###" onclick="YAAW.contextmenu.movedown();">下移</a></li>
-      <li class="task-move"><a href="###" onclick="YAAW.contextmenu.moveend();">置底</a></li>
+      <li class="task-move"><a href="#" id="menuMoveTop" >置顶</a></li>
+      <li class="task-move"><a href="#" id="menuMoveUp" >上移</a></li>
+      <li class="task-move"><a href="#" id="menuMoveDown" >下移</a></li>
+      <li class="task-move"><a href="#" id="menuMoveEnd" >置底</a></li>
     </ul>
 
     <section class="modal hide fade" id="add-task-modal">
@@ -163,10 +163,10 @@
     </div>
     <div class="modal-body">
       <div id="add-task-alert" class="alert alert-error hide">
-        <a href="###" onclick="$('#add-task-alert').hide();" class="close">×</a>
+        <a href="#" id="closeAlert"  class="close">×</a>
         <strong>错误:</strong> <span class="alert-msg"></span>
       </div>
-      <form id="add-task-uri" onsubmit="YAAW.add_task.submit(this);return false;">
+      <form id="add-task-uri">
         <div class="input-append">
           <input type="text" name="uri" id="uri-input" class="input-clear" placeholder="HTTP, FTP 或 磁力链" /><span><a id="torrent-up-btn" class="btn">上传种子<input type="file" id="torrent-up-input" /></a></span>
         </div>
@@ -176,8 +176,8 @@
       <div id="add-task-option-wrap"></div>
     </div>
     <div class="modal-footer">
-      <a href="###" onclick="$('#add-task-uri').submit();" id="add-task-submit" class="btn btn-primary">添加</a>
-      <a href="###" onclick="YAAW.add_task.clean();" class="btn" data-dismiss="modal">取消</a>
+      <a href="#" id="add-task-submit" class="btn btn-primary">添加</a>
+      <a href="#" id="add-task-clear" class="btn" data-dismiss="modal">取消</a>
     </div>
     </section>
 
@@ -187,7 +187,7 @@
       <h2>设置</h2>
     </div>
     <div class="modal-body">
-      <form id="setting-form" class="form-horizontal" onsubmit="YAAW.setting.submit();return false;">
+      <form id="setting-form" class="form-horizontal">
         <fieldset>
           <div class="control-group rpc-path-group">
             <label class="control-label" for="rpc-path">JSON-RPC 路径</label>
@@ -217,6 +217,17 @@
               </label>
             </div>
           </div>
+          <div class="control-group">
+            <label class="control-label">Finish Notification</label>
+            <div class="controls">
+              <label class="radio inline">
+                <input type="radio" name="finish_notification" value="1" checked> Enable
+              </label>
+              <label class="radio inline">
+                <input type="radio" name="finish_notification" value="0"> Disable
+              </label>
+            </div>
+          </div>
         </fieldset>
       </form>
       <div id="aria2-gsetting">
@@ -224,7 +235,7 @@
     </div>
     <div class="modal-footer">
       <div id="copyright">© Copyright <a href="https://github.com/binux/yaaw" target="_blank">Binux</a>  汉化 <a href="http://yonsm.net" target="_blank">Yonsm.NET</a> </div>
-      <a href="###" onclick="$('#setting-form').submit();" class="btn btn-success">保存</a>
+      <a href="#" id="saveSettings"  class="btn btn-success">保存</a>
       <a href="#" class="btn" data-dismiss="modal">取消</a>
     </div>
     </section>
@@ -305,11 +316,19 @@
             <li class="active"><a href="#ib-status" data-toggle="tab">状态</a></li>
             <li><a href="#ib-files" data-toggle="tab">文件</a></li>
             <li><a id="ib-options-a" href="#ib-options" data-toggle="tab">选项</a></li>
+            <li><a id="ib-peers-a" class="hide" style="display:none;" href="#ib-peers" data-toggle="tab">Peers</a></li>
           </ul>
           <div class="tab-content">
             <div class="tab-pane active" id="ib-status"> </div>
-            <div class="tab-pane" id="ib-files"> </div>
+            <div class="tab-pane" id="ib-files">
+              <div id="ib-file-btn">
+                <button id="ib-file-save" class="btn btn-primary">保存</button>
+              </div>
+              <div class="file-list">
+              </div>
+            </div>
             <div class="tab-pane" id="ib-options"> </div>
+            <div class="tab-pane" id="ib-peers"> </div>
           </div>
         </div>
       </div>
@@ -328,21 +347,12 @@
       </ul>
     </script>
 
-    <script id="ib-files-tpl" type="text/mustache-template">
-      <ul>
-        <li id="ib-file-btn">
-          <button id="ib-file-save" class="btn btn-primary">保存</button>
-          <button id="ib-file-select" class="btn">全选</button>
-          <button id="ib-file-unselect" class="btn">不选</button>
-        </li>
-        {{#files}}
+    <script id="file-tpl" type="text/mustache-template">
         <li>
           <i class="select-box{{#selected}} icon-ok{{/selected}}" data-index="{{index}}"></i>
-          <span class="ib-file-title">{{title}}</span>
+          <span class="ib-file-title">{{relative_title}}</span>
           <span class="ib-file-size"> {{#_v.format_size}}{{completedLength}}{{/_v.format_size}} / {{#_v.format_size}}{{length}}{{/_v.format_size}}</span>
         </li>
-        {{/files}}
-      </ul>
     </script>
 
     <script id="ib-options-tpl" type="text/mustache-template">
@@ -361,7 +371,7 @@
 
     <script id="ib-peers-tpl" type="text/mustache-template">
       {{#.}}
-      <li><span class="ip_port">{{ip}}:{{port}}</span> <b>{{#_v.bitfield_to_percent}}{{bitfield}}{{/_v.bitfield_to_percent}}%</b> <i class="icon-download"></i>{{#_v.format_size}}{{downloadSpeed}}{{/_v.format_size}}/s <i class="icon-upload"></i>{{#_v.format_size}}{{uploadSpeed}}{{/_v.format_size}}/s</li>
+      <li><span class="ip_port">{{ip}}:{{port}} - <span class="peerid">{{#_v.format_peerid}}{{peerId}}{{/_v.format_peerid}}</span></span> <b>{{#_v.bitfield_to_percent}}{{bitfield}}{{/_v.bitfield_to_percent}}%</b> <i class="icon-download"></i>{{#_v.format_size}}{{downloadSpeed}}{{/_v.format_size}}/s <i class="icon-upload"></i>{{#_v.format_size}}{{uploadSpeed}}{{/_v.format_size}}/s</li>
       {{/.}}
     </script>
 
@@ -491,6 +501,7 @@
     <script src="js/jquery.Storage.js"></script>
     <script src="js/jquery.base64.min.js"></script>
     <script src="js/mustache.js"></script>
+    <script src="js/peerid.js"></script>
     <script src="js/aria2.js"></script>
     <script src="js/yaaw.js"></script>
   </body>

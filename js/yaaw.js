@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2012 Binux <17175297.hk@gmail.com>
+ * Copyright (C) 2015 Binux <roy@binux.me>
  *
  * This file is part of YAAW (https://github.com/binux/yaaw).
  *
@@ -42,12 +42,91 @@ var YAAW = (function() {
         }
         ARIA2.refresh();
         ARIA2.auto_refresh(YAAW.setting.refresh_interval);
+        ARIA2.finish_notification = YAAW.setting.finish_notification;
         ARIA2.get_version();
         ARIA2.global_stat();
       });
     },
 
     event_init: function() {
+
+      $("#add-task-submit").live("click", function() {
+        YAAW.add_task.submit();return false;
+      });
+      $("#add-task-uri").submit(function() {
+        YAAW.add_task.submit();return false;
+      });
+      $("#saveSettings").live("click", function() {
+        YAAW.setting.submit();return false;
+      });
+      $("#setting-form").submit(function() {
+        YAAW.setting.submit();return false;
+      });
+      $("#add-task-clear").live("click", function() {
+        YAAW.add_task.clean();
+      });
+      $("#btnRemove").live("click", function() {
+        YAAW.tasks.remove();YAAW.tasks.unSelectAll();
+      });
+      $("#btnPause").live("click", function() {
+        YAAW.tasks.pause();YAAW.tasks.unSelectAll();
+      });
+      $("#btnUnPause").live("click", function() {
+        YAAW.tasks.unpause();YAAW.tasks.unSelectAll();
+      });
+      $("#btnClearAlert").live("click", function() {
+        $('#main-alert').hide();
+      });
+      $("#btnSelectActive").live("click", function() {
+        YAAW.tasks.selectActive();
+      });
+      $("#btnSelectWaiting").live("click", function() {
+        YAAW.tasks.selectWaiting();
+      });
+      $("#btnSelectPaused").live("click", function() {
+        YAAW.tasks.selectPaused();
+      });
+      $("#btnSelectStopped").live("click", function() {
+        YAAW.tasks.selectStopped();
+      });
+      $("#btnStartAll").live("click", function() {
+        ARIA2.unpause_all();
+      });
+      $("#btnPauseAll").live("click", function() {
+        ARIA2.pause_all();
+      });
+      $("#btnRemoveFinished").live("click", function() {
+        ARIA2.purge_download_result();
+      });
+      $("#closeAlert").live("click", function() {
+        $('#add-task-alert').hide();
+      });
+      $("#menuMoveTop").live("click", function() {
+        YAAW.contextmenu.movetop();
+      });
+      $("#menuMoveUp").live("click", function() {
+        YAAW.contextmenu.moveup();
+      });
+      $("#menuMoveDown").live("click", function() {
+        YAAW.contextmenu.movedown();
+      });
+      $("#menuMoveEnd").live("click", function() {
+        YAAW.contextmenu.moveEnd();
+      });
+      $("#menuRestart").live("click", function() {
+        YAAW.contextmenu.restart();
+      });
+      $("#menuStart").live("click", function() {
+        YAAW.contextmenu.unpause();
+      });
+      $("#menuPause").live("click", function() {
+        YAAW.contextmenu.pause();
+      });
+      $("#menuRemove").live("click", function() {
+        YAAW.contextmenu.remove();
+      });
+
+
       $("[rel=tooltip]").tooltip({"placement": "bottom"});
 
       $(".task .select-box").live("click", function() {
@@ -74,13 +153,17 @@ var YAAW = (function() {
         $("#ati-out").parents(".control-group").val("").toggle();
       });
 
-      $("#ib-files li").live("click", function() {
-        $(this).find(".select-box").toggleClass("icon-ok");
+      $("#ib-files .ib-file-title, #ib-files .select-box").live("click", function() {
+        if ($(this).parent().find(".select-box:first").hasClass("icon-ok")) {
+          $(this).parent().find(".select-box").removeClass("icon-ok");
+        } else {
+          $(this).parent().find(".select-box").addClass("icon-ok");
+        }
       });
 
       $("#ib-file-save").live("click", function() {
         var indexes = [];
-        $("#ib-files .select-box.icon-ok").each(function(i, n) {
+        $("#ib-files .select-box.icon-ok[data-index]").each(function(i, n) {
           indexes.push(n.getAttribute("data-index"));
         });
         if (indexes.length == 0) {
@@ -91,14 +174,6 @@ var YAAW = (function() {
           };
           ARIA2.change_option($(this).parents(".info-box").attr("data-gid"), options);
         };
-      });
-
-      $("#ib-file-select").live("click", function() {
-        $("#ib-files .select-box").addClass("icon-ok");
-      });
-
-      $("#ib-file-unselect").live("click", function() {
-        $("#ib-files .select-box").removeClass("icon-ok");
       });
 
       $("#ib-options-a").live("click", function() {
@@ -197,6 +272,49 @@ var YAAW = (function() {
         });
       },
 
+      files_tree: function(files) {
+        var file_dict = {}, f;
+        for (var i = 0; i < files.length; i++) {
+          var at = files[i].title.split('/');
+          f = file_dict;
+          for (var j = 0; j < at.length; j++) {
+            f[at[j]] = f[at[j]] || {};
+            f = f[at[j]];
+          }
+          f['_file'] = files[i];
+        }
+
+        function render(f) {
+          var content = '<ul>';
+
+          for (var k in f) {
+            if (f[k]['_file'] !== undefined) {
+              continue;
+            }
+
+            content += '<li>';
+            content += '<i class="select-box icon-ok"></i>';
+            content += '<span class="ib-file-title">'+$('<div>').text(k).html()+'</span>';
+            content += render(f[k]);
+            content += '</li>';
+          }
+
+          for (k in f) {
+            if (f[k]['_file'] === undefined) {
+              continue;
+            }
+
+            f[k]['_file']['relative_title'] = k;
+            content += YAAW.tpl.file(f[k]['_file']);
+          }
+          content += '</ul>';
+          return content;
+        }
+
+        //console.log(file_dict);
+        return render(file_dict);
+      },
+
       view: {
         bitfield: function() {
           var graphic = "░▒▓█";
@@ -204,7 +322,7 @@ var YAAW = (function() {
             var len = text.length;
             var result = "";
             for (var i=0; i<len; i++)
-              result += graphic[Math.floor(parseInt(text[i], 16)/4)] + "&#8203;";
+            result += graphic[Math.floor(parseInt(text[i], 16)/4)] + "&#8203;";
             return result;
           };
         },
@@ -305,6 +423,24 @@ var YAAW = (function() {
           };
         },
 
+        format_peerid: function() {
+          return function format_peerid(peerid) {
+            try {
+              var ret = window.format_peerid(peerid);
+              if (ret.client == 'unknown') throw 'unknown';
+              return ret.client+(ret.version ? '-'+ret.version : '');
+            } catch(e) {
+              if (peerid == '%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00')
+                return 'unknown';
+              var ret = unescape(peerid).split('-');
+              for (var i=0; i<ret.length; i++) {
+                if (ret[i].trim().length) return ret[i];
+              }
+              return 'unknown';
+            }
+          }
+        },
+
         error_msg: function() {
           var error_code_map = {
             0: "",
@@ -387,7 +523,7 @@ var YAAW = (function() {
           YAAW.setting.save_add_task_option(options_save);
         }
       },
-      
+
       clean: function() {
         $("#uri-input").attr("placeholder", "HTTP, FTP or Magnet");
         $("#add-task-modal .input-clear").val("");
@@ -451,7 +587,7 @@ var YAAW = (function() {
       toggle: function(task) {
         $(task).toggleClass("selected").find(".select-box").toggleClass("icon-ok");
       },
-      
+
       unSelectAll: function(notupdate) {
         var _this = this;
         $(".tasks-table .task.selected").each(function(i, n) {
@@ -496,10 +632,10 @@ var YAAW = (function() {
         this.check_select();
       },
 
-      selectStoped: function() {
+      selectStopped: function() {
         var _this = this;
         this.unSelectAll(true);
-        $("#stoped-tasks-table .task").each(function(i, n) {
+        $("#stopped-tasks-table .task").each(function(i, n) {
           _this.select(n);
         });
         this.check_select();
@@ -517,7 +653,7 @@ var YAAW = (function() {
         var gids = new Array();
         $(".tasks-table .task.selected").each(function(i, n) {
           if (n.getAttribute("data-status") == "active" ||
-            n.getAttribute("data-status") == "waiting")
+              n.getAttribute("data-status") == "waiting")
             gids.push(n.getAttribute("data-gid"));
         });
         if (gids.length) ARIA2.pause(this.getSelectedGids());
@@ -525,17 +661,17 @@ var YAAW = (function() {
 
       unpause: function() {
         var gids = new Array();
-        var stoped_gids = new Array();
+        var stopped_gids = new Array();
         $(".tasks-table .task.selected").each(function(i, n) {
           var status = n.getAttribute("data-status");
           if (status == "paused") {
             gids.push(n.getAttribute("data-gid"));
           } else if ("removed/error".indexOf(status) != -1) {
-            stoped_gids.push(n.getAttribute("data-gid"));
+            stopped_gids.push(n.getAttribute("data-gid"));
           }
         });
         if (gids.length) ARIA2.unpause(gids);
-        if (stoped_gids.length) ARIA2.restart_task(stoped_gids);
+        if (stopped_gids.length) ARIA2.restart_task(stopped_gids);
       },
 
       remove: function() {
@@ -555,7 +691,7 @@ var YAAW = (function() {
       info: function(task) {
         task.addClass("info-open");
         task.after(YAAW.tpl.info_box({gid: task.attr("data-gid")}));
-        if (task.parents("#stoped-tasks-table").length) {
+        if (task.parents("#stopped-tasks-table").length) {
           $("#ib-options-a").hide();
         }
         ARIA2.get_status(task.attr("data-gid"));
@@ -593,7 +729,7 @@ var YAAW = (function() {
             $("#task-contextmenu .task-move").show();
           else
             $("#task-contextmenu .task-move").hide();
-          if (status == "removed" || status == "completed" || status == "error") {
+          if (status == "removed" || status == "complete" || status == "error") {
             $(".task-restart").show();
             $(".task-start").hide();
           } else {
@@ -605,8 +741,8 @@ var YAAW = (function() {
           // toElement is not available in Firefox, use relatedTarget instead.
           var enteredElement = ev.toElement || ev.relatedTarget;
           if ($.contains(this, enteredElement) ||
-            $("#task-contextmenu").get(0) == enteredElement ||
-            $.contains($("#task-contextmenu").get(0), enteredElement)) {
+              $("#task-contextmenu").get(0) == enteredElement ||
+                $.contains($("#task-contextmenu").get(0), enteredElement)) {
             return;
           }
           on_gid = null;
@@ -644,7 +780,14 @@ var YAAW = (function() {
       },
 
       remove: function() {
-        if (on_gid) ARIA2.remove(on_gid);
+        if (on_gid) {
+          var status = $("#task-gid-"+on_gid).attr("data-status");
+          if (status == "removed" || status == "complete" || status == "error") {
+            ARIA2.remove_result(on_gid);
+          } else {
+            ARIA2.remove(on_gid);
+          }
+        }
         on_gid = null;
       },
 
@@ -672,8 +815,9 @@ var YAAW = (function() {
 
     setting: {
       init: function() {
-        this.jsonrpc_path = $.Storage.get("jsonrpc_path") || "http://"+(location.host.split(":")[0]||"localhost")+":6800"+"/jsonrpc";
+        this.jsonrpc_path = $.Storage.get("jsonrpc_path") || location.protocol+"//"+(location.host.split(":")[0]||"localhost")+":6800"+"/jsonrpc";
         this.refresh_interval = Number($.Storage.get("refresh_interval") || 10000);
+        this.finish_notification = Number($.Storage.get("finish_notification") || 1);
         this.add_task_option = $.Storage.get("add_task_option");
         this.jsonrpc_history = JSON.parse($.Storage.get("jsonrpc_history") || "[]");
         if (this.add_task_option) {
@@ -713,11 +857,13 @@ var YAAW = (function() {
           $.Storage.set("jsonrpc_history", JSON.stringify(this.jsonrpc_history));
         }
         $.Storage.set("refresh_interval", String(this.refresh_interval));
+        $.Storage.set("finish_notification", String(this.finish_notification));
       },
 
       update: function() {
         $("#setting-form #rpc-path").val(this.jsonrpc_path);
         $("#setting-form input:radio[name=refresh_interval][value="+this.refresh_interval+"]").attr("checked", true);
+        $("#setting-form input:radio[name=finish_notification][value="+this.finish_notification+"]").attr("checked", true);
         if (this.jsonrpc_history.length) {
           var content = '<ul class="dropdown-menu">';
           $.each(this.jsonrpc_history, function(n, e) {
@@ -729,28 +875,40 @@ var YAAW = (function() {
           });
           $(".rpc-path-wrap .dropdown-toggle").removeAttr("disabled").dropdown();
         }
+        if (this.finish_notification && Notification.permission !== "granted") {
+          Notification.requestPermission();
+        }
       },
 
       submit: function() {
         _this = $("#setting-form");
         var _jsonrpc_path = _this.find("#rpc-path").val();
         var _refresh_interval = Number(_this.find("input:radio[name=refresh_interval]:checked").val());
+        var _finish_notification = Number(_this.find("input:radio[name=finish_notification]:checked").val());
 
         var changed = false;
-        if (_jsonrpc_path != undefined && this.jsonrpc_path != _jsonrpc_path) {
+        if (_jsonrpc_path !== undefined && this.jsonrpc_path != _jsonrpc_path) {
           this.jsonrpc_path = _jsonrpc_path;
           YAAW.tasks.unSelectAll();
           $("#main-alert").hide();
           YAAW.aria2_init();
           changed = true;
         }
-        if (_refresh_interval != undefined && this.refresh_interval != _refresh_interval) {
+        if (_refresh_interval !== undefined && this.refresh_interval != _refresh_interval) {
           this.refresh_interval = _refresh_interval;
           ARIA2.auto_refresh(this.refresh_interval);
           changed = true;
         }
+        if (_finish_notification !== undefined && this.finish_notification != _finish_notification) {
+          this.finish_notification = _finish_notification;
+          ARIA2.finish_notification = _finish_notification;
+          changed = true;
+        }
         if (changed) {
           this.save();
+        }
+        if (this.finish_notification && Notification.permission !== "granted") {
+          Notification.requestPermission();
         }
 
         // submit aria2 global setting
@@ -764,6 +922,21 @@ var YAAW = (function() {
         ARIA2.change_global_option(options);
         $("#setting-modal").modal('hide');
       },
+    },
+
+    notification: function(title, content) {
+      if (!Notification) {
+        return false;
+      }
+
+      if (Notification.permission !== "granted")
+        Notification.requestPermission();
+
+      var notification = new Notification(title, {
+        body: content,
+      });
+
+      return notification;
     },
   }
 })();

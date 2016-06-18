@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2012 Binux <17175297.hk@gmail.com>
+ * Copyright (C) 2015 Binux <roy@binux.me>
  *
  * This file is part of YAAW (https://github.com/binux/yaaw).
  *
@@ -21,7 +21,7 @@
 if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
   var jsonrpc_interface, jsonrpc_protocol, jsonrpc_ws, interval_id, rpc_secret = null,
       unique_id = 0, ws_callback = {};
-  var active_tasks_snapshot="", tasks_cnt_snapshot="", select_lock=false, need_refresh=false;
+  var active_tasks_snapshot="", finished_tasks_list=undefined, tasks_cnt_snapshot="", select_lock=false, need_refresh=false;
   var auto_refresh=false;
 
   function get_error(result) {
@@ -59,7 +59,7 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
   }
 
   function bind_event(dom) {
-    dom.find("[rel=tooltip]").tooltip({"placement": "bottom"});
+    dom.find("[rel=tooltip]").tooltip({"placement": "bottom", trigger : 'hover'});
   }
 
   function get_title(result) {
@@ -68,8 +68,8 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
     if (result.bittorrent && result.bittorrent.info && result.bittorrent.info.name)
       title = result.bittorrent.info.name;
     else if (result.files[0].path.replace(
-      new RegExp("^"+dir.replace(/\\/g, "[\\/]")+"/?"), "").split("/").length) {
-      title = result.files[0].path.replace(new RegExp("^"+dir.replace(/\\/g, "[\\/]")+"/?"), "").split("/");
+      new RegExp("^"+dir.replace(/\\/g, "/").replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')+"/?"), "").split("/").length) {
+      title = result.files[0].path.replace(new RegExp("^"+dir.replace(/\\/g, "/").replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')+"/?"), "").split("/");
       if (result.bittorrent)
         title = title[0];
       else
@@ -346,27 +346,20 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
     },
 
     restart_task: function(gids) {
-      var uris = [];
       $.each(gids, function(n, gid) {
         var result = $("#task-gid-"+gid).data("raw");
+        var uris = [];
         $.each(result.files, function(n, e) {
           if (e.uris.length)
             uris.push(e.uris[0].uri);
         });
+        if (uris.length > 0) {
+          ARIA2.request("getOption", [gid], function(result) {
+            var options = result.result;
+            ARIA2.madd_task(uris, options);
+          });
+        }
       });
-
-      if (uris.length == 0) {
-        main_alert("alert-error", "No files found! (BitTorrent tasks can't restart.)", 2000);
-      } else if (uris.length == 1) {
-        $("#add-task-modal").modal("show");
-        $("#uri-input").val(uris[0]);
-      } else {
-        $("#add-task-modal").modal("show");
-        $("#add-task-uri .input-append").hide();
-        $("#uri-textarea").val(uris.join("\n")).show();
-        $("#uri-more").text($("#uri-more").text().split("").reverse().join(""));
-        $("#ati-out").parents(".control-group").val("").hide();
-      }
     },
 
     tell_active: function(keys) {
@@ -448,28 +441,49 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
       );
     },
 
-    tell_stoped: function(keys) {
+    tell_stopped: function(keys) {
       if (select_lock) return;
       var params = [0, 1000];
       if (keys) params.push(keys);
       ARIA2.request("tellStopped", params,
         function(result) {
           //console.debug(result);
+          if (select_lock) return;
 
           if (!result.result) {
             main_alert("alert-error", "<strong>Error: </strong>rpc result error.", 5000);
           }
 
-          if (select_lock) return;
           result = ARIA2.status_fix(result.result);
-          $("#stoped-tasks-table").empty().append(YAAW.tpl.other_task({"tasks": result.reverse()}));
+
+          if (finished_tasks_list === undefined) {
+            finished_tasks_list = new Array();
+            $.each(result, function(i, e) {
+              if (e.status != "complete")
+                return;
+              finished_tasks_list.push(e.gid);
+            });
+          } else {
+            $.each(result, function(i, e) {
+              if (e.status != "complete")
+                return;
+              if (finished_tasks_list.indexOf(e.gid) != -1)
+                return;
+              if (ARIA2.finish_notification) {
+                YAAW.notification("Aria2 Task Finished", e.title);
+              }
+              finished_tasks_list.push(e.gid);
+            });
+          }
+
+          $("#stopped-tasks-table").empty().append(YAAW.tpl.other_task({"tasks": result.reverse()}));
           $.each(result, function(n, e) {
             $("#task-gid-"+e.gid).data("raw", e);
           });
-          bind_event($("#stoped-tasks-table"))
+          bind_event($("#stopped-tasks-table"))
 
           if ($("#waiting-tasks-table .empty-tasks").length > 0 &&
-            $("#stoped-tasks-table .task").length > 0) {
+            $("#stopped-tasks-table .task").length > 0) {
               $("#waiting-tasks-table").empty();
             }
 
@@ -589,7 +603,7 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
 
           if (error.length == 0) {
             main_alert("alert-info", "Removed", 1000);
-            ARIA2.tell_stoped();
+            ARIA2.tell_stopped();
           } else {
             main_alert("alert-error", error.join("<br />"), 3000);
           }
@@ -751,7 +765,9 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
             file.selected = file.selected == "true" ? true : false;
           };
           $("#ib-status").empty().append(YAAW.tpl.ib_status(result));
-          $("#ib-files").empty().append(YAAW.tpl.ib_files(result));
+          $("#ib-files .file-list").empty().append(YAAW.tpl.files_tree(result.files));
+          if ($("#task-gid-"+gid).attr("data-status") == "active")
+            $("#ib-file-save").hide();
           if (result.bittorrent) {
             $("#ib-peers-a").show();
           }
@@ -778,7 +794,7 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
         need_refresh = false;
         ARIA2.tell_active();
         ARIA2.tell_waiting();
-        ARIA2.tell_stoped();
+        ARIA2.tell_stopped();
       }
     },
 
@@ -809,5 +825,7 @@ if (typeof ARIA2=="undefined"||!ARIA2) var ARIA2=(function(){
       }, interval);
       auto_refresh = true;
     },
+
+    finish_notification: 1,
   }
 })();

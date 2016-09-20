@@ -268,8 +268,8 @@
           <div class="progress-info">
             {{#downloadSpeed}}<span class="download-speed"><i class="icon-download"></i> {{#_v.format_size}}{{downloadSpeed}}{{/_v.format_size}}/s</span>{{/downloadSpeed}}
             {{#uploadSpeed}}<span class="upload-speed"><i class="icon-upload"></i> {{#_v.format_size}}{{uploadSpeed}}{{/_v.format_size}}/s</span>{{/uploadSpeed}}
-            {{#connections}}<span class="seeders"><i class="icon-signal" rel="tooltip" title="Connections"></i> {{connections}}</span>{{/connections}}
-            {{#numSeeders}}<span class="seeders"><i class="icon-magnet" rel="tooltip" title="Seeders"></i> {{numSeeders}}</span>{{/numSeeders}}
+            {{#connections}}<span class="seeders"><i class="icon-signal" rel="tooltip" title="连接数"></i> {{connections}}</span>{{/connections}}
+            {{#numSeeders}}<span class="seeders"><i class="icon-magnet" rel="tooltip" title="种子数"></i> {{numSeeders}}</span>{{/numSeeders}}
           </div>
         </div>
       </li>
@@ -316,7 +316,7 @@
             <li class="active"><a href="#ib-status" data-toggle="tab">状态</a></li>
             <li><a href="#ib-files" data-toggle="tab">文件</a></li>
             <li><a id="ib-options-a" href="#ib-options" data-toggle="tab">选项</a></li>
-            <li><a id="ib-peers-a" class="hide" style="display:none;" href="#ib-peers" data-toggle="tab">Peers</a></li>
+            <li><a id="ib-peers-a" class="hide" style="display:none;" href="#ib-peers" data-toggle="tab">同伴</a></li>
           </ul>
           <div class="tab-content">
             <div class="tab-pane active" id="ib-status"> </div>
@@ -340,7 +340,7 @@
         <li><strong>状态: </strong>{{status}} {{error_msg}}</li>
         <li><strong>目录: </strong>{{dir}}</li>
         {{#bittorrent}}
-          {{#creationDate}}<li>Torrent Created At {{creationDate}}</li>{{/creationDate}}
+          {{#creationDate}}<li>种子创建于 {{creationDate}}</li>{{/creationDate}}
           {{#comment}}<li><strong>注释: </strong>{{comment}}</li>{{/comment}}
         {{/bittorrent}}
         <li class="bitfield"><strong>区块: </strong>{{#_v.bitfield}}{{bitfield}}{{/_v.bitfield}}</li>
